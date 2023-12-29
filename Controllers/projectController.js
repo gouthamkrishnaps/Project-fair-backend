@@ -37,7 +37,7 @@ exports.addProject = async(req,res)=>{
     }
 
 
-    res.status(200).json('add project request recieved')
+    //res.status(200).json('add project request recieved')
 }
 
 //getHomeProject
@@ -53,8 +53,18 @@ exports.getHomeProject = async(req,res)=>{
 
 //getAllProject
 exports.getAllProject = async(req,res)=>{
+    const searchKey = req.query.search
+    console.log(searchKey);
+
+    const query={
+        language:{
+            //regular expression,options to remove case sensitive property
+            $regex:searchKey,$options:"i"
+        }
+    }
+
     try{
-        const allProject = await projects.find().limit(3)
+        const allProject = await projects.find(query)
         res.status(200).json(allProject)
     } catch(err){
         res.status(401).json(`Request Failed due to ${err}`)
@@ -65,9 +75,40 @@ exports.getAllProject = async(req,res)=>{
 exports.getUserProject = async(req,res)=>{
     const userId = req.payload
     try{
-        const allUserProject = await projects.find({userId}).limit(3)
+        const allUserProject = await projects.find({userId})
         res.status(200).json(allUserProject)
     } catch(err){
         res.status(401).json(`Request Failed due to ${err}`)
+    }
+}
+
+//editproject
+exports.editUserProject = async(req,res)=>{
+    const {id} = req.params
+    const userId = req.payload
+    const {title,projectImage,language,github,website,overView} = req.body
+
+    const uploadProjectImage = req.file?req.file.filename:projectImage
+
+    try {
+        const updateProject = await projects.findByIdAndUpdate({_id:id},{title,projectImage:uploadProjectImage,language,github,website,overView,userId},{new:true})
+
+        await updateProject.save()
+        res.status(200).json(updateProject)
+
+    } catch (err) {
+        res.status(401).json(err)
+    }
+}
+
+//deleteProject
+exports.deleteUserProject = async(req,res)=>{
+    const {id} = req.params
+
+    try {
+        const removeProject = await projects.findByIdAndDelete({_id:id})
+        res.status(200).json(removeProject)
+    } catch (err) {
+        res.status(401).json(err)
     }
 }
