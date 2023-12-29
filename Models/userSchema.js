@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema({
     username:{
         type:String,
         require:true,
-        min:[6,'Must be atleast 3 character , got only {value}']
+        min:[3,'Must be atleast 3 character , got only {value}']
     },
     email:{
         type:String,
